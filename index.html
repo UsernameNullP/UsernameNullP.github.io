@@ -43,26 +43,31 @@
                     const paletteContainer = document.getElementById('paletteContainer');
                     paletteContainer.innerHTML = '';
 
-                    for (let i = 0; i < 64; i++) {
-                        const wordValue = (paletteData[i * 2] << 8) | paletteData[i * 2 + 1];
-                        const blue = (wordValue >> 8) & 0x0E;
-                        const green = (wordValue >> 4) & 0x0E;
-                        const red = wordValue & 0x0E;
+                    const numColors = paletteData.length / 2;
+                    const numRows = Math.ceil(numColors / 16);
 
-                        const colorBox = document.createElement('div');
-                        colorBox.className = 'color-box';
-                        colorBox.style.backgroundColor = `rgb(${red * 16}, ${green * 16}, ${blue * 16})`;
+                    for (let row = 0; row < numRows; row++) {
+                        const rowContainer = document.createElement('div');
+                        for (let col = 0; col < 16; col++) {
+                            const colorIndex = row * 16 + col;
+                            if (colorIndex < numColors) {
+                                const wordValue = (paletteData[colorIndex * 2] << 8) | paletteData[colorIndex * 2 + 1];
+                                const blue = (wordValue >> 8) & 0x0E;
+                                const green = (wordValue >> 4) & 0x0E;
+                                const red = wordValue & 0x0E;
 
-                        colorBox.addEventListener('click', function() {
-                            showControlBar(this);
-                        });
+                                const colorBox = document.createElement('div');
+                                colorBox.className = 'color-box';
+                                colorBox.style.backgroundColor = `rgb(${red * 16}, ${green * 16}, ${blue * 16})`;
 
-                        paletteContainer.appendChild(colorBox);
+                                colorBox.addEventListener('click', function() {
+                                    showControlBar(this);
+                                });
 
-                        if ((i + 1) % 16 === 0) {
-                            // Start a new row after displaying 16 colors
-                            paletteContainer.appendChild(document.createElement('br'));
+                                rowContainer.appendChild(colorBox);
+                            }
                         }
+                        paletteContainer.appendChild(rowContainer);
                     }
                 };
 
@@ -137,7 +142,7 @@
                 paletteData[index * 2 + 1] = wordValue & 0xFF;
             });
 
-            // Update the palette in the exported image (if any)
+            // Update the palette in the exported image
             const canvas = document.querySelector('canvas');
             if (canvas) {
                 const ctx = canvas.getContext('2d');
@@ -147,7 +152,7 @@
                 colorBoxes.forEach((colorBox, index) => {
                     if (index > 0 && index % 16 === 0) {
                         x = 0;
-                        y += 16;
+                        y += 32;
                     }
 
                     const colorStyle = getComputedStyle(colorBox);
@@ -157,16 +162,18 @@
                     const blue = parseInt(color[2]);
 
                     ctx.fillStyle = `rgb(${red}, ${green}, ${blue}`;
-                    ctx.fillRect(x, y, 16, 16);
-                    x += 16;
+                    ctx.fillRect(x, y, 32, 32); // Make each color square
+                    x += 32;
                 });
             }
         }
 
         document.getElementById('exportButton').addEventListener('click', function() {
             const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 64; // To accommodate 4 rows without extra space
+            const numColors = paletteData.length / 2;
+            const numRows = Math.ceil(numColors / 16);
+            canvas.width = 512; // Fixed width for a full row of 16 colors
+            canvas.height = numRows * 32; // Adjust the canvas height
 
             const ctx = canvas.getContext('2d');
             const colorBoxes = document.querySelectorAll('.color-box');
@@ -176,7 +183,7 @@
             colorBoxes.forEach((colorBox, index) => {
                 if (index > 0 && index % 16 === 0) {
                     x = 0;
-                    y += 16; // Reduce the space between rows to zero
+                    y += 32;
                 }
 
                 const colorStyle = getComputedStyle(colorBox);
@@ -186,8 +193,8 @@
                 const blue = parseInt(color[2]);
 
                 ctx.fillStyle = `rgb(${red}, ${green}, ${blue}`;
-                ctx.fillRect(x, y, 16, 16); // Make each color square
-                x += 16;
+                ctx.fillRect(x, y, 32, 32); // Make each color square
+                x += 32;
             });
 
             const imgData = canvas.toDataURL('image/png');
