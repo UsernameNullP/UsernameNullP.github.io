@@ -15,18 +15,25 @@
         .slider {
             width: 100px;
         }
+        .slider-label {
+            width: 20px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
     <input type="file" id="fileInput" accept=".pal">
     <div id="paletteContainer"></div>
     <div id="controlBar" class="control-bar">
-        Red: <input id="redSlider" class="slider" type="range" min="0" max="14" step="2"><br>
-        Green: <input id="greenSlider" class="slider" type="range" min="0" max="14" step="2"><br>
-        Blue: <input id="blueSlider" class="slider" type="range" min="0" max="14" step="2">
+        <div class="slider-label">Red: <span id="redValue">0</span></div>
+        <input id="redSlider" class="slider" type="range" min="0" max="14" step="2"><br>
+        <div class="slider-label">Green: <span id="greenValue">0</span></div>
+        <input id="greenSlider" class="slider" type="range" min="0" max="14" step="2"><br>
+        <div class="slider-label">Blue: <span id="blueValue">0</span></div>
+        <input id="blueSlider" class="slider" type="range" min="0" max="14" step="2">
     </div>
-    <button id="exportButton">Export as PNG</button>
     <button id="savePaletteButton">Save Palette</button>
+    <button id="exportPaletteButton">Export Palette as PNG</button>
 
     <script>
         let currentColorBox = null;
@@ -79,19 +86,26 @@
             if (currentColorBox) {
                 updateColor(currentColorBox);
             }
+            updateSliderValue('redValue', this.value);
         });
 
         document.getElementById('greenSlider').addEventListener('input', function() {
             if (currentColorBox) {
                 updateColor(currentColorBox);
             }
+            updateSliderValue('greenValue', this.value);
         });
 
         document.getElementById('blueSlider').addEventListener('input', function() {
             if (currentColorBox) {
                 updateColor(currentColorBox);
             }
+            updateSliderValue('blueValue', this.value);
         });
+
+        function updateSliderValue(sliderId, value) {
+            document.getElementById(sliderId).textContent = value;
+        }
 
         function showControlBar(colorBox) {
             const controlBar = document.getElementById('controlBar');
@@ -106,6 +120,9 @@
             document.getElementById('greenSlider').value = green;
             document.getElementById('blueSlider').value = blue;
             controlBar.style.display = 'block';
+            updateSliderValue('redValue', red);
+            updateSliderValue('greenValue', green);
+            updateSliderValue('blueValue', blue);
         }
 
         function updateColor(colorBox) {
@@ -131,8 +148,16 @@
                 paletteData[index * 2 + 1] = wordValue & 0xFF;
             });
         }
+        
+        document.getElementById('savePaletteButton').addEventListener('click', function() {
+            const blob = new Blob([paletteData], { type: 'application/octet-stream' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'edited_palette.pal';
+            a.click();
+        });
 
-        document.getElementById('exportButton').addEventListener('click', function() {
+        document.getElementById('exportPaletteButton').addEventListener('click', function() {
             const canvas = document.createElement('canvas');
             const numColors = paletteData.length / 2;
             const numRows = Math.ceil(numColors / 16);
@@ -140,6 +165,7 @@
             canvas.height = numRows * 32;
 
             const ctx = canvas.getContext('2d');
+            const colorBoxes = document.querySelectorAll('.color-box');
             let x = 0;
             let y = 0;
 
@@ -164,14 +190,6 @@
             const a = document.createElement('a');
             a.href = imgData;
             a.download = 'palette.png';
-            a.click();
-        });
-
-        document.getElementById('savePaletteButton').addEventListener('click', function() {
-            const blob = new Blob([paletteData], { type: 'application/octet-stream' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'edited_palette.pal';
             a.click();
         });
     </script>
