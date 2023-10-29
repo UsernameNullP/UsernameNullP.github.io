@@ -24,7 +24,6 @@
         Red: <input id="redSlider" class="slider" type="range" min="0" max="14" step="2"><br>
         Green: <input id="greenSlider" class="slider" type="range" min="0" max="14" step="2"><br>
         Blue: <input id="blueSlider" class="slider" type="range" min="0" max="14" step="2">
-        <div id="colorValue">Color Value: 0000</div>
     </div>
     <button id="exportButton">Export as PNG</button>
     <button id="savePaletteButton">Save Palette</button>
@@ -48,6 +47,7 @@
 
                     for (let row = 0; row < numRows; row++) {
                         const rowContainer = document.createElement('div');
+                        rowContainer.className = 'palette-row';
                         for (let col = 0; col < 16; col++) {
                             const colorIndex = row * 16 + col;
                             if (colorIndex < numColors) {
@@ -106,7 +106,6 @@
             document.getElementById('greenSlider').value = green;
             document.getElementById('blueSlider').value = blue;
             controlBar.style.display = 'block';
-            updateColorValue(red, green, blue);
         }
 
         function updateColor(colorBox) {
@@ -115,16 +114,6 @@
             const blue = document.getElementById('blueSlider').value;
             colorBox.style.backgroundColor = `rgb(${red * 16}, ${green * 16}, ${blue * 16})`;
             updatePalette();
-            updateColorValue(red, green, blue);
-        }
-
-        function updateColorValue(red, green, blue) {
-            const colorValueElement = document.getElementById('colorValue');
-            const redHex = red.toString(16).toUpperCase();
-            const greenHex = green.toString(16).toUpperCase();
-            const blueHex = blue.toString(16).toUpperCase();
-            const colorValue = redHex.padStart(2, '0') + greenHex.padStart(2, '0') + blueHex.padStart(2, '0') + '0';
-            colorValueElement.textContent = `Color Value: ${colorValue}`;
         }
 
         function updatePalette() {
@@ -141,42 +130,16 @@
                 paletteData[index * 2] = (wordValue >> 8) & 0xFF;
                 paletteData[index * 2 + 1] = wordValue & 0xFF;
             });
-
-            // Update the palette in the exported image
-            const canvas = document.querySelector('canvas');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                let x = 0;
-                let y = 0;
-
-                colorBoxes.forEach((colorBox, index) => {
-                    if (index > 0 && index % 16 === 0) {
-                        x = 0;
-                        y += 32;
-                    }
-
-                    const colorStyle = getComputedStyle(colorBox);
-                    const color = colorStyle.backgroundColor.match(/\d+/g);
-                    const red = parseInt(color[0]);
-                    const green = parseInt(color[1]);
-                    const blue = parseInt(color[2]);
-
-                    ctx.fillStyle = `rgb(${red}, ${green}, ${blue}`;
-                    ctx.fillRect(x, y, 32, 32); // Make each color square
-                    x += 32;
-                });
-            }
         }
 
         document.getElementById('exportButton').addEventListener('click', function() {
             const canvas = document.createElement('canvas');
             const numColors = paletteData.length / 2;
             const numRows = Math.ceil(numColors / 16);
-            canvas.width = 512; // Fixed width for a full row of 16 colors
-            canvas.height = numRows * 32; // Adjust the canvas height
+            canvas.width = 512;
+            canvas.height = numRows * 32;
 
             const ctx = canvas.getContext('2d');
-            const colorBoxes = document.querySelectorAll('.color-box');
             let x = 0;
             let y = 0;
 
@@ -193,7 +156,7 @@
                 const blue = parseInt(color[2]);
 
                 ctx.fillStyle = `rgb(${red}, ${green}, ${blue}`;
-                ctx.fillRect(x, y, 32, 32); // Make each color square
+                ctx.fillRect(x, y, 32, 32);
                 x += 32;
             });
 
