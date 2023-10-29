@@ -3,6 +3,10 @@
 <head>
     <title>Sega Genesis Palette Editor</title>
     <style>
+    body {
+            background-color: #333; /* Dark grey background */
+            color: #fff; /* White text color */
+        }
         .color-box {
             width: 32px;
             height: 32px;
@@ -22,7 +26,7 @@
     </style>
 </head>
 <body>
-    <input type="file" id="fileInput" accept=".pal">
+    <input type="file" id="fileInput" accept=".bin,.pal">
     <div id="paletteContainer"></div>
     <div id="controlBar" class="control-bar">
         <div class="slider-label">Red: <span id="redValue">0</span></div>
@@ -32,7 +36,7 @@
         <div class="slider-label">Blue: <span id="blueValue">0</span></div>
         <input id="blueSlider" class="slider" type="range" min="0" max="14" step="2">
     </div>
-    <button id="savePaletteButton">Save Palette</button>
+    <button id="savePaletteButton">Export Palette</button>
     <button id="exportPaletteButton">Export Palette as PNG</button>
 
     <script>
